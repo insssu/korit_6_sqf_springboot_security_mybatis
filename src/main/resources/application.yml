@@ -1,0 +1,21 @@
+spring:
+  datasource:
+#    url: jdbc:h2:mem:auth_db
+    url: jdbc:h2:file:./data/auth_db
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+
+#  원래는 secret를 만들어서 관리해줘야 함
+jwt:
+  secret: 47341db166eac22bc8ec17694df1d920b90493cc3fe0955eda41b7e4e567e2ad136e87fda4b4facd4fb0a32e376cd8e5f34adab33cb4c8ecc42adbb1b9022b0fe0289178bdec5011e1587c1e200881440d099b4d9661a36116c59a1db8bdd7d543df4da6cf4469721e857827fed67f2245dc64b64fc6d2dcd559ec767ee83a6658d333ef043439cb30db7160c434826952b50f7899660d6fd987fcecd78abe6ef04432852190f31492c83be91a304750dbc4cc804c1832f5eb4612f5cee64a9f52c4cd14ce4dd0aa361be20468281ab8f795edf2ace5706aef11073de794eb7da0d78815f661817dfa3fb68290201a7cc7e0194d76bda6e342776dae5c89c3b1
