@@ -1,7 +1,6 @@
 package com.study.springSecurity.init;
 
 import com.study.springSecurity.domain.entity.Role;
-import com.study.springSecurity.repository.RoleRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;

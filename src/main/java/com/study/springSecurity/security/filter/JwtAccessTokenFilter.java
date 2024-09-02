@@ -1,7 +1,7 @@
 package com.study.springSecurity.security.filter;
 
 import com.study.springSecurity.domain.entity.User;
-import com.study.springSecurity.repository.UserRepository;
+import com.study.springSecurity.repository.UserMapper;
 import com.study.springSecurity.security.jwt.JwtProvider;
 import com.study.springSecurity.security.principal.PrincipalUser;
 import io.jsonwebtoken.Claims;
@@ -14,8 +14,8 @@ import org.springframework.stereotype.Component;
 import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
-import java.util.Objects;
 import java.util.Optional;
+import java.util.jar.JarException;
 
 @Component
 public class JwtAccessTokenFilter extends GenericFilter {
@@ -24,7 +24,7 @@ public class JwtAccessTokenFilter extends GenericFilter {
     private JwtProvider jwtProvider;
 
     @Autowired
-    private UserRepository userRepository;
+    private UserMapper userMapper;
 
     @Override
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
@@ -35,27 +35,28 @@ public class JwtAccessTokenFilter extends GenericFilter {
         // 그럼 Headers에 Authorization Key값이 생기고 value는 Jwt토큰 값이 암호화되서 들어간다
         String bearerAccessToken = request.getHeader("Authorization");
 
-        if (bearerAccessToken != null) {
-            String accessToken = jwtProvider.removeBearer(bearerAccessToken);
-            Claims claims = null;
-            try {
-                claims = jwtProvider.parseToken(accessToken);
-            } catch (Exception e) {
-                filterChain.doFilter(servletRequest, servletResponse);  // filterChain.doFilter : 다음 필터로 넘어가라
-                return; // 리턴을 걸지 않으면 또 다음 필터로 넘어가기때문에 무한루프가 걸려버림
-            }
+        if (bearerAccessToken == null || bearerAccessToken.isBlank()) {
+            filterChain.doFilter(servletRequest, servletResponse);
+            return;
+        }
 
+        String accessToken = jwtProvider.removeBearer(bearerAccessToken);
+        Claims claims = null;
+        try {
+            claims = jwtProvider.parseToken(accessToken);
             Long userId = ((Integer) claims.get("userId")).longValue();
-            Optional<User> optionalUser = userRepository.findById(userId);
-            if (optionalUser.isEmpty()) {   // 토큰은 존재하지만 계정이 사라진 경우
-                filterChain.doFilter(servletRequest, servletResponse);
-                return;
+            User user = userMapper.findById(userId);
+            if (user == null) {   // 토큰은 존재하지만 계정이 사라진 경우
+                throw new JarException("해당 ID(" + userId + ")의 사용자 정보를 찾지 못했습니다.");
             }
-
-            PrincipalUser principalUser = optionalUser.get().toPrincipalUser();     // 데이터 베이스에서 가져온 유저 객체를 통해 principalUser 를 만들었음
+            PrincipalUser principalUser = user.toPrincipalUser();     // 데이터 베이스에서 가져온 유저 객체를 통해 principalUser 를 만들었음
             Authentication authentication = new UsernamePasswordAuthenticationToken(principalUser, principalUser.getPassword(), principalUser.getAuthorities()); // principal 객체가 들어와줘야 한다.
-//            System.out.println("예외 발생하지 않음");
+    //            System.out.println("예외 발생하지 않음");
             SecurityContextHolder.getContext().setAuthentication(authentication);
+        } catch (Exception e) {
+            e.printStackTrace();
+            filterChain.doFilter(servletRequest, servletResponse);  // filterChain.doFilter : 다음 필터로 넘어가라
+            return; // 리턴을 걸지 않으면 또 다음 필터로 넘어가기때문에 무한루프가 걸려버림
         }
 //        System.out.println(bearerAccessToken);
         /*

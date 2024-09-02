@@ -4,8 +4,6 @@ import com.study.springSecurity.aspect.annotation.TimeAop;
 import com.study.springSecurity.domain.entity.Role;
 import com.study.springSecurity.domain.entity.User;
 import com.study.springSecurity.dto.request.ReqSignupDto;
-import com.study.springSecurity.repository.RoleRepository;
-import com.study.springSecurity.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
